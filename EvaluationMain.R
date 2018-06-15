@@ -29,7 +29,8 @@ trainingData <- readRDS(file = "waterDataTraining.RDS")
 ###############################################################################
 ### execute and evaluate all detectors ########################################
 setwd(submissionDir)
-allDetectors <- dir(pattern = "*.R")
+allDetectors <- dir(pattern = "*Detector.R")
+cat(allDetectors)
 
 completeResult <- NULL
 
