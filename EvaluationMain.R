@@ -1,7 +1,7 @@
 ###############################################################################
-#                                                                             # 
+#                                                                             #
 #      GECCO 2018 Industrial Challenge - Main Evaluation                      #
-#                                                                             #  
+#                                                                             #
 #      Run this file to test and evaluate your Detector                       #
 #                                                                             #
 ###############################################################################
@@ -38,22 +38,22 @@ for (submission in allDetectors){ # submission <- allDetectors[6]
   source(submission)
   submissionOutline <- getOutline()
   cat(paste("\nRunning Submission: ", submissionOutline$NAME))
-  
+
   ## Run detector
   predictionResult <- rep(NA, nrow(trainingData)) # empty result array
   for (rowIndex in 1:nrow(trainingData)){
     predictionResult[rowIndex] <- detect(dataset = trainingData[rowIndex, -11])
   }
-  
+
   ## Evaluate prediction using F1 score
   result <- calculateScore(observations = trainingData$EVENT, predictions = predictionResult)
-  
+
   ## Write evaluation result to result table
   SubmissionResult <- data.frame(SUBMISSION=submissionOutline$NAME, TP=result$TP, FP=result$FP, TN=result$TN, FN=result$FN, RESULT=result$SCORE, stringsAsFactors = FALSE)
   if (is.null(completeResult)){
     completeResult <- SubmissionResult
   } else {
-    completeResult <- rbind(completeResult, SubmissionResult)  
+    completeResult <- rbind(completeResult, SubmissionResult)
   }
 }
 cat("\nEvaluation finished:\n")
@@ -67,11 +67,3 @@ winningIndex <- which(max(completeResult$RESULT) == completeResult$RESULT)
 cat(paste("\nSubmission: *", completeResult$SUBMISSION[winningIndex], "* wins.\nSee data.frame: completeResult for more Details.", sep="" ))
 
 completeResult
-
-
-
-
-
-
-
-
