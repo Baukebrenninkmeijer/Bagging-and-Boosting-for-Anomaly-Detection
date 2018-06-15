@@ -24,22 +24,30 @@ getOutline <- function(){
 train <- function(dataset){
   
 }
-# [c(1:200000),]
-waterDataTraining = trainingData
+
 library(adabag)
+library(ROCR)
 library(rpart)
-library(mlbench)
+
 
 l <- length(waterDataTraining[,1])
 sub <- sample(1:l,2*l/3)
 mfinal <- 20
 maxdepth <- 15
 
-waterDataTraining$EVENT <- as.factor(waterDataTraining$EVENT)
-water.adaboost <- boosting(EVENT~.,data=waterDataTraining[sub,], mfinal=mfinal,
+train <- trainingData[sub,]
+test <- trainingData[-sub,]
+train$EVENT[train$EVENT == "True"] <- 1
+train$EVENT[train$EVENT == "False"] <- 0
+test$EVENT[test$EVENT == "True"] <- 1
+test$EVENT[test$EVENT == "False"] <- 0
+
+
+train$EVENT <- as.factor(train$EVENT)
+
+water.adaboost <- boosting(EVENT~.,data=train, mfinal=mfinal,
                            control=rpart.control(maxdepth=maxdepth), coeflearn="Zhu")
-# water.adaboost <- boosting(EVENT~.,data=waterDataTraining[sub,], mfinal=mfinal)
-water.adaboost.pred <- predict(water.adaboost,newdata=waterDataTraining[-sub, ],type="class")
+water.adaboost.pred <- predict(water.adaboost,newdata=test,type="class")
 tb <- table(water.adaboost.pred$class, waterDataTraining$EVENT[-sub])
 error.adaboost <- 1-(sum(diag(tb))/sum(tb))
 tb
@@ -50,36 +58,14 @@ error.adaboost
 #comparing error evolution in training and test set
 errorevol(water.adaboost,newdata=waterDataTraining[sub, ])->evol.train
 errorevol(water.adaboost,newdata=waterDataTraining[-sub, ])->evol.test
-
-plot.errorevol(evol.test,evol.train)
-png(filename="Error_depth15_mfinal20.png")
-dev.off()
-
-
-library(mlbench)
-library(rpart)
-data(Vehicle)
-l <- length(Vehicle[,1])
-sub <- sample(1:l,2*l/3)
-mfinal <- 3 
-maxdepth <- 5
-
-Vehicle.rpart <- rpart(Class~.,data=Vehicle[sub,],maxdepth=maxdepth)
-Vehicle.rpart.pred <- predict(Vehicle.rpart,newdata=Vehicle[-sub, ],type="class")
-tb <- table(Vehicle.rpart.pred,Vehicle$Class[-sub])
-error.rpart <- 1-(sum(diag(tb))/sum(tb))
-tb
-error.rpart
-
-Vehicle.adaboost <- boosting(Class ~.,data=Vehicle[sub, ],mfinal=mfinal, coeflearn="Zhu",
-                             control=rpart.control(maxdepth=maxdepth))
-Vehicle.adaboost.pred <- predict.boosting(Vehicle.adaboost,newdata=Vehicle[-sub, ])
-Vehicle.adaboost.pred$confusion
-Vehicle.adaboost.pred$error
-
-#comparing error evolution in training and test set
-errorevol(Vehicle.adaboost,newdata=Vehicle[sub, ])->evol.train
-errorevol(Vehicle.adaboost,newdata=Vehicle[-sub, ])->evol.test
-
 plot.errorevol(evol.test,evol.train)
 
+
+library(xgboost)
+
+dtrain <- xgb.DMatrix(data = data.matrix(train[,-11]), label = data.matrix(train[, 11]))
+bst <- xgboost(data = dtrain, max.depth = 2, eta = 1, nthread = 2, nround = 2, objective = "binary:logistic")
+pred <- predict(bst, data.matrix(test_gx$EVENT))
+print(length(pred))
+err <- mean(as.numeric(pred > 0.5) != test$EVENT)
+print(paste("test-error=", err))
