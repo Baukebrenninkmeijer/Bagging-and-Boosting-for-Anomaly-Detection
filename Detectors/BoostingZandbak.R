@@ -47,7 +47,7 @@ train$EVENT <- as.factor(train$EVENT)
 
 water.adaboost <- boosting(EVENT~.,data=train, mfinal=mfinal,
                            control=rpart.control(maxdepth=maxdepth), coeflearn="Zhu")
-water.adaboost.pred <- predict(water.adaboost,newdata=test,type="class")
+water.adaboost.pred <- predict(water.adaboost,newdata=test[, -11],type="class")
 tb <- table(water.adaboost.pred$class, waterDataTraining$EVENT[-sub])
 error.adaboost <- 1-(sum(diag(tb))/sum(tb))
 tb
@@ -62,10 +62,20 @@ plot.errorevol(evol.test,evol.train)
 
 
 library(xgboost)
+library(DiagrammeR)
 
 dtrain <- xgb.DMatrix(data = data.matrix(train[,-11]), label = data.matrix(train[, 11]))
-bst <- xgboost(data = dtrain, max.depth = 2, eta = 1, nthread = 2, nround = 2, objective = "binary:logistic")
-pred <- predict(bst, data.matrix(test_gx$EVENT))
+bst <- xgboost(data = dtrain, nrounds =50, objective = "binary:logistic", nthread = 6, maxdepth = 5)
+# , max.depth = 5, eta = 1, nthread = 2, nround = 2, objective = "binary:logistic"
+# xgb_cv <- xgb.cv(data=dtrain, nrounds=50, objective = "binary:logistic", nfold = 5)
+xgb.plot.tree(feature_names = colnames(test[, -11]), model = bst)
+
+
+water.xgboost.pred <- predict(bst, data.matrix(test$EVENT))
 print(length(pred))
+water.xgboostcv.pred <- predict(xgb_cv, data.matrix(test$EVENT))
 err <- mean(as.numeric(pred > 0.5) != test$EVENT)
 print(paste("test-error=", err))
+
+tb <- table(as.numeric(water.xgboost.pred > 0.5), test$EVENT)
+tb
