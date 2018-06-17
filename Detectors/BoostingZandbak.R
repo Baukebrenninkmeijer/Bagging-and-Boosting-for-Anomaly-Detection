@@ -65,7 +65,7 @@ plot.errorevol(evol.test,evol.train)
 library(xgboost)
 library(DiagrammeR)
 
-dtrain <- xgb.DMatrix(data = data.matrix(train[,-11]), label = data.matrix(train[, 11]))
+# dtrain <- xgb.DMatrix(data = data.matrix(train[,-11]), label = data.matrix(train[, 11]))
 bst <- xgboost(data = data.matrix(train[,-11]), label = data.matrix(train[, 11]), nrounds =50, objective = "binary:logistic", nthread = 6, maxdepth = 5)
 # , max.depth = 5, eta = 1, nthread = 2, nround = 2, objective = "binary:logistic"
 # xgb_cv <- xgb.cv(data=dtrain, nrounds=50, objective = "binary:logistic", nfold = 5)
@@ -74,7 +74,7 @@ watchlist <- list(train=dtrain, test=xgb.DMatrix(data = data.matrix(test[,-11]),
 bst <- xgb.train(data=dtrain, max.depth=5, nthread = 6, nround=40, watchlist=watchlist, eval.metric = "error", eval.metric = "logloss", objective = "binary:logistic")
 
 water.xgboost.pred <- predict(bst, data.matrix(test[, -11]))
-water.xgboostcv.pred <- predict(bst, data.matrix(test$EVENT))
+# water.xgboostcv.pred <- predict(bst, data.matrix(test$EVENT))
 err <- mean(as.numeric(water.xgboost.pred > 0.5) != test$EVENT)
 print(paste("test-error=", err))
 

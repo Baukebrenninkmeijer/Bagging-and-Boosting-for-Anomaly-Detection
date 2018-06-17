@@ -11,7 +11,7 @@ calculateScore <- function(observations, predictions){
   # print(TruePositiveRate)
   # print(2 * PositivePredictiveValue * TruePositiveRate)
   # print(PositivePredictiveValue + TruePositiveRate)
-  
+
   F1score <- (2 * PositivePredictiveValue * TruePositiveRate) / (PositivePredictiveValue + TruePositiveRate)
   
   if (is.nan(F1score)) F1score <- 0

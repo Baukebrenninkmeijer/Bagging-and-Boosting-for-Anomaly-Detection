@@ -37,13 +37,14 @@ trainSet$EVENT[trainSet$EVENT == "True"] <- 1
 trainSet$EVENT[trainSet$EVENT == "False"] <- 0
 testSet$EVENT[testSet$EVENT == "True"] <- 1
 testSet$EVENT[testSet$EVENT == "False"] <- 0
+
 trainSet$EVENT <- as.factor(trainSet$EVENT)
 testSet$EVENT <- as.factor(testSet$EVENT)
 
 ###############################################################################
 ### execute and evaluate all detectors ########################################
 setwd(submissionDir)
-allDetectors <- dir(pattern = "*XGBoostDetector.R")
+allDetectors <- dir(pattern = "*Detector.R")
 cat(allDetectors)
 
 completeResult <- NULL
@@ -63,8 +64,9 @@ for (submission in allDetectors){ # submission <- allDetectors[6]
   if(class(predictionResult) == "list"){
     predictionResult = as.numeric(predictionResult$class)
   }
-  result <- calculateScore(observations = as.numeric(testSet$EVENT), predictions = predictionResult)
 
+  result <- calculateScore(observations = as.numeric(levels(testSet$EVENT))[testSet$EVENT], predictions = predictionResult)
+  
   ## Write evaluation result to result table
   SubmissionResult <- data.frame(SUBMISSION=submissionOutline$NAME, TP=result$TP, FP=result$FP, TN=result$TN, FN=result$FN, RESULT=result$SCORE, stringsAsFactors = FALSE)
   if (is.null(completeResult)){

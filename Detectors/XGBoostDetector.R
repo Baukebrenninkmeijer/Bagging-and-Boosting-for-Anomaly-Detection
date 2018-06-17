@@ -1,10 +1,10 @@
-library(adabag)
-library(rpart)
+library(xgboost)
+
 
 train <- function(dataset){
   #do something smart
-  nrounds = 10
-  nthread = 6
+  nrounds = 50
+  nthread = 10
   maxdepth = 5
   water.xgb <- xgboost(data = data.matrix(dataset[,-11]), label = data.matrix(dataset[, 11]), 
                  nrounds = nrounds, objective = "binary:logistic", nthread = nthread, maxdepth = maxdepth)
@@ -13,13 +13,9 @@ train <- function(dataset){
 }
 
 detect <- function(dataset, booster){
-  print("Komt wel hier")
-  dataset <- testSet
-  dataset$EVENT <- as.factor(dataset$EVENT)
-  water.xgb.pred <- predict(booster, newdata=dataset, type="class")
+  water.xgb.pred <- predict(booster, newdata=data.matrix(dataset), type="class")
   ## return prediction
-  print("Komt niet meer hier")
-  return(as.numeric(water.Xgb.pred > 0.5))
+  return(as.numeric(water.xgb.pred > 0.5))
 }
 
 destruct <- function(){

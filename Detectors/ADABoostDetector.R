@@ -33,7 +33,7 @@ destruct <- function(){
 }
 
 getOutline <- function(){
-  competitor.name <- "Robroek en Brenninkmeijer - ADABoost"
+  competitor.name <- "Robroek en Brenninkmeijer - ADABoostDetector"
   competitor.institution <- "Radboud University"
 
   return (list(NAME=competitor.name, INSTITUTION=competitor.institution));
