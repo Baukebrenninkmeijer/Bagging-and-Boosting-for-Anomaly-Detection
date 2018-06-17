@@ -27,10 +27,23 @@ source("f1score.R")
 setwd(dataDir)
 trainingData <- readRDS(file = "waterDataTraining.RDS")
 
+l <- length(trainingData[,1])
+sub <- sample(1:l,2*l/3)
+
+trainSet = trainingData[sub,]
+testSet = trainingData[-sub,]
+
+trainSet$EVENT[trainSet$EVENT == "True"] <- 1
+trainSet$EVENT[trainSet$EVENT == "False"] <- 0
+testSet$EVENT[testSet$EVENT == "True"] <- 1
+testSet$EVENT[testSet$EVENT == "False"] <- 0
+trainSet$EVENT <- as.factor(trainSet$EVENT)
+testSet$EVENT <- as.factor(testSet$EVENT)
+
 ###############################################################################
 ### execute and evaluate all detectors ########################################
 setwd(submissionDir)
-allDetectors <- dir(pattern = "*BoostDetector.R")
+allDetectors <- dir(pattern = "*XGBoostDetector.R")
 cat(allDetectors)
 
 completeResult <- NULL
@@ -42,14 +55,15 @@ for (submission in allDetectors){ # submission <- allDetectors[6]
   cat(paste("\nRunning Submission: ", submissionOutline$NAME))
 
   ## Run detector
-  predictionResult <- rep(NA, nrow(trainingData)) # empty result array
-  booster <- train(trainingData)
-  # for (rowIndex in 1:nrow(trainingData)){
-  predictionResult <- detect(dataset = trainingData[, -11], booster)
-  # }
+  predictionResult <- rep(NA, nrow(testSet)) # empty result array
+  booster <- train(trainSet)
+  predictionResult <- detect(dataset = testSet[, -11], booster)
 
   ## Evaluate prediction using F1 score
-  result <- calculateScore(observations = trainingData$EVENT, predictions = predictionResult)
+  if(class(predictionResult) == "list"){
+    predictionResult = as.numeric(predictionResult$class)
+  }
+  result <- calculateScore(observations = as.numeric(testSet$EVENT), predictions = predictionResult)
 
   ## Write evaluation result to result table
   SubmissionResult <- data.frame(SUBMISSION=submissionOutline$NAME, TP=result$TP, FP=result$FP, TN=result$TN, FN=result$FN, RESULT=result$SCORE, stringsAsFactors = FALSE)

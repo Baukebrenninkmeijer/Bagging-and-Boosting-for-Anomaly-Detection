@@ -30,7 +30,7 @@ library(ROCR)
 library(rpart)
 
 
-l <- length(waterDataTraining[,1])
+l <- length(trainingData[,1])
 sub <- sample(1:l,2*l/3)
 mfinal <- 20
 maxdepth <- 15
@@ -44,6 +44,7 @@ test$EVENT[test$EVENT == "False"] <- 0
 
 
 train$EVENT <- as.factor(train$EVENT)
+test$EVENT <- as.factor(test$EVENT)
 
 water.adaboost <- boosting(EVENT~.,data=train, mfinal=mfinal,
                            control=rpart.control(maxdepth=maxdepth), coeflearn="Zhu")
@@ -56,8 +57,8 @@ error.adaboost
 
 
 #comparing error evolution in training and test set
-errorevol(water.adaboost,newdata=waterDataTraining[sub, ])->evol.train
-errorevol(water.adaboost,newdata=waterDataTraining[-sub, ])->evol.test
+errorevol(water.adaboost, newdata=train)->evol.train
+errorevol(water.adaboost, newdata=test)->evol.test
 plot.errorevol(evol.test,evol.train)
 
 
@@ -65,17 +66,30 @@ library(xgboost)
 library(DiagrammeR)
 
 dtrain <- xgb.DMatrix(data = data.matrix(train[,-11]), label = data.matrix(train[, 11]))
-bst <- xgboost(data = dtrain, nrounds =50, objective = "binary:logistic", nthread = 6, maxdepth = 5)
+bst <- xgboost(data = data.matrix(train[,-11]), label = data.matrix(train[, 11]), nrounds =50, objective = "binary:logistic", nthread = 6, maxdepth = 5)
 # , max.depth = 5, eta = 1, nthread = 2, nround = 2, objective = "binary:logistic"
 # xgb_cv <- xgb.cv(data=dtrain, nrounds=50, objective = "binary:logistic", nfold = 5)
-xgb.plot.tree(feature_names = colnames(test[, -11]), model = bst)
+# xgb.plot.tree(feature_names = colnames(test[, -11]), model = bst)
+watchlist <- list(train=dtrain, test=xgb.DMatrix(data = data.matrix(test[,-11]), label = data.matrix(test[, 11])))
+bst <- xgb.train(data=dtrain, max.depth=5, nthread = 6, nround=40, watchlist=watchlist, eval.metric = "error", eval.metric = "logloss", objective = "binary:logistic")
 
-
-water.xgboost.pred <- predict(bst, data.matrix(test$EVENT))
-print(length(pred))
-water.xgboostcv.pred <- predict(xgb_cv, data.matrix(test$EVENT))
-err <- mean(as.numeric(pred > 0.5) != test$EVENT)
+water.xgboost.pred <- predict(bst, data.matrix(test[, -11]))
+water.xgboostcv.pred <- predict(bst, data.matrix(test$EVENT))
+err <- mean(as.numeric(water.xgboost.pred > 0.5) != test$EVENT)
 print(paste("test-error=", err))
 
 tb <- table(as.numeric(water.xgboost.pred > 0.5), test$EVENT)
 tb
+
+
+library(rpart)
+library(mlbench)
+
+water.bagging <- bagging(EVENT ~., data=train, mfinal=10, control=rpart.control(maxdepth=25, minsplit=15), par = TRUE)
+water.bagging.pred <- predict.bagging(water.bagging, newdata=test, newmfinal=3)
+water.bagging.pred$confusion
+water.bagging.pred$error
+
+errorevol(water.bagging, newdata=train)->evol.train
+errorevol(water.bagging, newdata=test)->evol.test
+plot.errorevol(evol.test, evol.train)

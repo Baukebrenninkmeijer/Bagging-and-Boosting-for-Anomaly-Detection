@@ -1,11 +1,8 @@
+train <- function(dataset)
+  return(NULL)
 
-detect <- function(dataset){
-  ## Predict event as random guess with 50% probability
-  probability <- runif(1)
-  event <- probability > 1.0
-
-  ## return prediction
-  return(event)
+detect <- function(dataset, booster){
+  return(rep_len(0, nrow(dataset)))
 }
 
 destruct <- function(){

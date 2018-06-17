@@ -3,19 +3,19 @@ library(rpart)
 
 train <- function(dataset){
   #do something smart
-  l <- length(dataset[,1])
-  sub <- sample(1:l,2*l/3)
+  # l <- length(dataset[,1])
+  # sub <- sample(1:l,2*l/3)
   mfinal <- 20
   maxdepth <- 15
-
-  waterdataset <- cbind(dataset)
-
-  waterdataset$EVENT[waterdataset$EVENT == "True"] <- 1
-  waterdataset$EVENT[waterdataset$EVENT == "False"] <- 0
-
-  waterdataset$EVENT <- as.factor(waterdataset$EVENT)
-  train <- waterdataset[sub,]
-  water.adaboost <- boosting(EVENT~.,data=train, mfinal=mfinal,
+# 
+#   waterdataset <- cbind(dataset)
+# 
+#   waterdataset$EVENT[waterdataset$EVENT == "True"] <- 1
+#   waterdataset$EVENT[waterdataset$EVENT == "False"] <- 0
+# 
+#   waterdataset$EVENT <- as.factor(waterdataset$EVENT)
+  # train <- waterdataset[sub,]
+  water.adaboost <- boosting(EVENT~.,data=dataset, mfinal=mfinal,
                              control=rpart.control(maxdepth=maxdepth), coeflearn="Zhu")
   return(water.adaboost)
 }
@@ -33,7 +33,7 @@ destruct <- function(){
 }
 
 getOutline <- function(){
-  competitor.name <- "Robroek en Brenninkmeijer"
+  competitor.name <- "Robroek en Brenninkmeijer - ADABoost"
   competitor.institution <- "Radboud University"
 
   return (list(NAME=competitor.name, INSTITUTION=competitor.institution));
