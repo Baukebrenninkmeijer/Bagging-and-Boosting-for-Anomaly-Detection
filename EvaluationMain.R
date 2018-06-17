@@ -1,3 +1,4 @@
+
 ###############################################################################
 #                                                                             #
 #      GECCO 2018 Industrial Challenge - Main Evaluation                      #
@@ -29,7 +30,7 @@ trainingData <- readRDS(file = "waterDataTraining.RDS")
 ###############################################################################
 ### execute and evaluate all detectors ########################################
 setwd(submissionDir)
-allDetectors <- dir(pattern = "*Detector.R")
+allDetectors <- dir(pattern = "*BoostDetector.R")
 cat(allDetectors)
 
 completeResult <- NULL
@@ -42,9 +43,10 @@ for (submission in allDetectors){ # submission <- allDetectors[6]
 
   ## Run detector
   predictionResult <- rep(NA, nrow(trainingData)) # empty result array
-  for (rowIndex in 1:nrow(trainingData)){
-    predictionResult[rowIndex] <- detect(dataset = trainingData[rowIndex, -11])
-  }
+  booster <- train(trainingData)
+  # for (rowIndex in 1:nrow(trainingData)){
+  predictionResult <- detect(dataset = trainingData[, -11], booster)
+  # }
 
   ## Evaluate prediction using F1 score
   result <- calculateScore(observations = trainingData$EVENT, predictions = predictionResult)

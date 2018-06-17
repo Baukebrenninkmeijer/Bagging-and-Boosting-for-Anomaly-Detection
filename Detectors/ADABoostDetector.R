@@ -1,24 +1,29 @@
 library(adabag)
 library(rpart)
 
-detect <- function(dataset){
+train <- function(dataset){
   #do something smart
   l <- length(dataset[,1])
   sub <- sample(1:l,2*l/3)
   mfinal <- 20
   maxdepth <- 15
 
-  train <- dataset[sub,]
-  test <- dataset[-sub,]
+  waterdataset <- cbind(dataset)
 
-  train$EVENT <- as.factor(train$EVENT)
+  waterdataset$EVENT[waterdataset$EVENT == "True"] <- 1
+  waterdataset$EVENT[waterdataset$EVENT == "False"] <- 0
 
+  waterdataset$EVENT <- as.factor(waterdataset$EVENT)
+  train <- waterdataset[sub,]
   water.adaboost <- boosting(EVENT~.,data=train, mfinal=mfinal,
                              control=rpart.control(maxdepth=maxdepth), coeflearn="Zhu")
-  water.adaboost.pred <- predict(water.adaboost,newdata=test,type="class")
+  return(water.adaboost)
+}
+
+detect <- function(dataset, booster){
+  adaboost.pred <- predict(booster,newdata=dataset,type="class")
   ## return prediction
-  cat("hallo")
-  return(water.adaboost.pred)
+  return(adaboost.pred)
 }
 
 destruct <- function(){
