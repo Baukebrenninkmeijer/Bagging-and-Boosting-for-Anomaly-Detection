@@ -13,8 +13,10 @@ results0.4 <- c()
 results0.5 <- c()
 results0.6 <- c()
 results0.7 <- c()
-for(i in 1:10){
-  sub <- sample(1:l,2*l/3)
+
+
+for(i in 1:9){
+  sub <- sample(1:l,i*l/10)
   mfinal <- 20
   maxdepth <- 15
   
@@ -28,8 +30,7 @@ for(i in 1:10){
   
   train$EVENT <- as.factor(train$EVENT)
   test$EVENT <- as.factor(test$EVENT)
-  mfinal <- 20
-  maxdepth <- 15
+
   water.adaboost <- boosting(EVENT~.,data=train, mfinal=mfinal,
                              control=rpart.control(maxdepth=maxdepth), coeflearn="Zhu")
   water.adaboost.pred <- predict(water.adaboost, newdata=test[, -11],type="class")
@@ -85,3 +86,13 @@ print(mean(results0.7))
 
 print(c(mean(xgError), mean(adaboostError)))
 
+# xgError <- c(0.0013135897, 0.0006896366, 0.0003991934 ,0.0004896107 ,0.0004728945 ,0.0005015494, 0.0005254359, 0.0005015404, 0.0002865945)
+# adaboostError <- c(0.0010031048, 0.0005552918, 0.0003684862, 0.0003582517, 0.0003439233, 0.0004119870, 0.0003582517, 0.0003224189, 0.0002149459)
+# results0.3 <- c(0.0010269883, 0.0006090298, 0.0003582505, 0.0003701935, 0.0003152630, 0.0004836369, 0.0004299021, 0.0005373648, 0.0002865945)
+
+# yrange = seq(10, 90, by=10)
+# heading = "Error evolution vs train set size"
+# plot(yrange, adaboostError, type='b', col="red", xlab = "Percentage of dataset used for training (%)", ylab="Test error (%)")
+# lines(yrange, xgError, type='b', col="green")
+# lines(yrange, results0.3, type='b', col="blue")
+# legend(x="topright", y=0.92, legend=c("Adaboost", "XGBoost", "Ensemble of both"), col=c("red", "green", "blue"), lty=1, cex=0.8)
