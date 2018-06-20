@@ -14,9 +14,14 @@ results0.5 <- c()
 results0.6 <- c()
 results0.7 <- c()
 
+baseDir <- getwd()
+dataDir  <- paste(baseDir, "Data", sep="/")
+setwd(dataDir)
+trainingData <- readRDS(file = "waterDataTraining.RDS")
 
-for(i in 1:9){
-  sub <- sample(1:l,i*l/10)
+
+for(i in 1:10){
+  sub <- sample(1:l,2*l/3)
   mfinal <- 20
   maxdepth <- 15
   
@@ -69,6 +74,7 @@ for(i in 1:9){
   # print(0.0005373801 > error && 0.0004084089 > error)
   
 }
+
 print(c(mean(results0.2), 0.0005373801 > mean(results0.2) && 0.0004084089 > mean(results0.2)))
 
 print(0.0005373801 > mean(results0.2) && 0.0004084089 > mean(results0.2))
